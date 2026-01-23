@@ -1,0 +1,17 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" rx="25.6" fill="#0f172a"/>
+  <g transform="translate(12.8, 12.8)">
+    <!-- Paw print -->
+    <ellipse cx="51.2" cy="66.56" rx="15.36" ry="18.432" fill="#fff"/>
+    <ellipse cx="25.6" cy="40.96000000000001" rx="10.240000000000002" ry="12.288" fill="#fff"/>
+    <ellipse cx="46.080000000000005" cy="32.768" rx="10.240000000000002" ry="12.288" fill="#fff"/>
+    <ellipse cx="56.32000000000001" cy="32.768" rx="10.240000000000002" ry="12.288" fill="#fff"/>
+    <ellipse cx="76.80000000000001" cy="40.96000000000001" rx="10.240000000000002" ry="12.288" fill="#fff"/>
+    <!-- Heart/Plus symbol -->
+    <path d="M51.2 56.32000000000001
+             L43.008 64.512
+             L51.2 76.80000000000001
+             L59.391999999999996 64.512 Z"
+          fill="#ef4444"/>
+  </g>
+</svg>

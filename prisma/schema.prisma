@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  pets      Pet[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Pet {
+  id              String         @id @default(cuid())
+  name            String
+  species         String         // e.g., "dog", "cat", "rabbit", "parrot", "turtle", etc.
+  breed           String?
+  age             Int            // in months (or approximate for reptiles/fish)
+  weight          Float?         // in kg (optional for small animals)
+  photoUrl        String?        // URL to pet photo (stored as base64 data URL or file path)
+  knownConditions String         @default("[]") // JSON array stored as string
+  allergies       String         @default("[]") // JSON array stored as string
+  medications     String         @default("[]") // JSON array stored as string
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  symptomChecks   SymptomCheck[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model SymptomCheck {
+  id               String   @id @default(cuid())
+  petId            String
+  pet              Pet      @relation(fields: [petId], references: [id], onDelete: Cascade)
+  symptoms         String   // user input
+  possibleCauses   String   // JSON array stored as string
+  severityCategory String   // "Emergency" | "Urgent" | "Non-Urgent" | "Monitor"
+  recommendations  String   // JSON array stored as string
+  whenToVisitVet   String
+  disclaimer       String
+  createdAt        DateTime @default(now())
+}
+
+model SharedRecord {
+  id                String   @id @default(cuid())
+  shareToken        String   @unique // Unique token for the share URL
+  petId             String
+  userId            String   // Owner who created the share
+  selectedCheckIds  String   // JSON array of symptom check IDs
+  careNotes         String?  // Additional notes from owner
+  vetName           String?  // Vet/clinic name (optional)
+  vetEmail          String?  // Vet email (optional)
+  expiresAt         DateTime // When the share link expires
+  viewCount         Int      @default(0) // Track how many times viewed
+  createdAt         DateTime @default(now())
+}
