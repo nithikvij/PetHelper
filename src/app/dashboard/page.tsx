@@ -9,6 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { getSpeciesInfo } from "@/types";
 import { PharmacyLocator } from "@/components/symptoms/PharmacyLocator";
 import { VetLocator } from "@/components/symptoms/VetLocator";
+import type { Pet, SymptomCheck } from "@prisma/client";
+
+type PetWithChecks = Pet & {
+  symptomChecks: SymptomCheck[];
+  photoUrl?: string | null;
+};
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -59,7 +65,7 @@ export default async function DashboardPage() {
         </Card>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {pets.map((pet) => {
+          {pets.map((pet: PetWithChecks) => {
             const speciesInfo = getSpeciesInfo(pet.species);
             const weightUnit =
               speciesInfo.vetType === "aquatic"
