@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Button } from "@/components/ui/button";
@@ -9,12 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { getSpeciesInfo } from "@/types";
 import { PharmacyLocator } from "@/components/symptoms/PharmacyLocator";
 import { VetLocator } from "@/components/symptoms/VetLocator";
-import type { Pet, SymptomCheck } from "@prisma/client";
-
-type PetWithChecks = Pet & {
-  symptomChecks: SymptomCheck[];
-  photoUrl?: string | null;
-};
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -65,7 +58,7 @@ export default async function DashboardPage() {
         </Card>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {pets.map((pet: PetWithChecks) => {
+          {pets.map((pet) => {
             const speciesInfo = getSpeciesInfo(pet.species);
             const weightUnit =
               speciesInfo.vetType === "aquatic"
@@ -81,16 +74,7 @@ export default async function DashboardPage() {
                     <div className="flex items-center gap-3">
                       {/* Pet Photo */}
                       <div className="relative w-12 h-12 rounded-full overflow-hidden bg-muted border border-border flex items-center justify-center flex-shrink-0">
-                        {pet.photoUrl ? (
-                          <Image
-                            src={pet.photoUrl}
-                            alt={`${pet.name}'s photo`}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <span className="text-2xl">{speciesInfo.icon}</span>
-                        )}
+                        <span className="text-2xl">{speciesInfo.icon}</span>
                       </div>
                       <CardTitle className="text-xl text-foreground">{pet.name}</CardTitle>
                     </div>
