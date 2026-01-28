@@ -1,18 +1,29 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
-
-// Check if we're in a build environment
-const isBuildTime = process.env.NODE_ENV === "production" && !process.env.DATABASE_URL;
 
 function getPrismaClient(): PrismaClient {
   if (globalForPrisma.prisma) {
     return globalForPrisma.prisma;
   }
 
-  const client = new PrismaClient();
+  const databaseUrl = process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL;
+
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is not set");
+  }
+
+  // Prisma 7 requires using a driver adapter
+  const adapter = new PrismaPg({
+    connectionString: databaseUrl,
+    // For Railway/cloud PostgreSQL that may have SSL issues
+    ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
+  });
+
+  const client = new PrismaClient({ adapter });
 
   if (process.env.NODE_ENV !== "production") {
     globalForPrisma.prisma = client;
@@ -39,6 +50,10 @@ function createBuildTimeMock(): PrismaClient {
   };
   return new Proxy({}, handler) as PrismaClient;
 }
+
+// Check if we're in a build environment (no DATABASE_URL available)
+const databaseUrl = process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL;
+const isBuildTime = !databaseUrl;
 
 // Export prisma client - use mock during build, real client at runtime
 export const prisma: PrismaClient = isBuildTime
