@@ -52,8 +52,32 @@ export async function POST(request: Request) {
       medications: JSON.parse(pet.medications) as string[],
     };
 
-    // Analyze symptoms with Claude (pass media for image analysis)
-    const analysis = await analyzeSymptoms(symptoms, petInfo, validMedia);
+    // Check if AI is available
+    const hasApiKey = process.env.ANTHROPIC_API_KEY &&
+                      process.env.ANTHROPIC_API_KEY !== "your-anthropic-api-key-here";
+
+    let analysis;
+
+    if (hasApiKey) {
+      // Analyze symptoms with Claude (pass media for image analysis)
+      analysis = await analyzeSymptoms(symptoms, petInfo, validMedia);
+    } else {
+      // Placeholder response when AI is not configured
+      analysis = {
+        possibleCauses: [
+          "AI analysis is not available - please consult a veterinarian for proper diagnosis"
+        ],
+        severityCategory: "Non-Urgent",
+        recommendations: [
+          "Contact your local veterinarian for a professional assessment",
+          "Monitor your pet's symptoms and note any changes",
+          "Keep your pet comfortable and hydrated",
+          "AI symptom analysis will be available once configured"
+        ],
+        whenToVisitVet: "For any concerning symptoms, please visit your veterinarian for a proper examination and diagnosis.",
+        disclaimer: "This is a placeholder response. AI-powered symptom analysis is not currently configured. Please consult a qualified veterinarian for medical advice about your pet."
+      };
+    }
 
     // Save to database
     await prisma.symptomCheck.create({
