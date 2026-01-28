@@ -1,42 +1,46 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-let prismaInstance: any = null;
+import { PrismaClient } from "@prisma/client";
 
-function createPrismaClient() {
-  // Only import and create PrismaClient when actually needed
-  const { PrismaClient } = require("@prisma/client");
-  return new PrismaClient();
-}
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
 
-// Use a getter pattern to defer initialization
-export const prisma = new Proxy({} as any, {
-  get(_target, prop) {
-    // Lazy initialize prisma client on first actual use
-    if (!prismaInstance) {
-      const databaseUrl = process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL;
+// Check if we're in a build environment
+const isBuildTime = process.env.NODE_ENV === "production" && !process.env.DATABASE_URL;
 
-      if (!databaseUrl) {
-        // Return a no-op proxy during build time
-        return new Proxy(() => {}, {
-          get() { return this; },
-          apply() {
-            return Promise.resolve(null);
-          }
-        });
-      }
-
-      prismaInstance = createPrismaClient();
-
-      // Cache in globalThis for development
-      if (process.env.NODE_ENV !== "production") {
-        (globalThis as any).__prisma = prismaInstance;
-      }
-    }
-
-    return prismaInstance[prop];
+function getPrismaClient(): PrismaClient {
+  if (globalForPrisma.prisma) {
+    return globalForPrisma.prisma;
   }
-});
 
-// Restore cached instance in development
-if (process.env.NODE_ENV !== "production" && (globalThis as any).__prisma) {
-  prismaInstance = (globalThis as any).__prisma;
+  const client = new PrismaClient();
+
+  if (process.env.NODE_ENV !== "production") {
+    globalForPrisma.prisma = client;
+  }
+
+  return client;
 }
+
+// Create a mock PrismaClient for build time that won't throw on property access
+function createBuildTimeMock(): PrismaClient {
+  const handler: ProxyHandler<object> = {
+    get(_target, prop) {
+      if (prop === "then" || prop === "catch" || prop === "finally") {
+        return undefined;
+      }
+      // Return a function that returns a proxy for chaining
+      return (..._args: unknown[]) => {
+        return new Proxy({}, handler);
+      };
+    },
+    apply() {
+      return new Proxy({}, handler);
+    },
+  };
+  return new Proxy({}, handler) as PrismaClient;
+}
+
+// Export prisma client - use mock during build, real client at runtime
+export const prisma: PrismaClient = isBuildTime
+  ? createBuildTimeMock()
+  : getPrismaClient();
