@@ -7,7 +7,8 @@ import { defineConfig } from "prisma/config";
 dotenv.config({ path: ".env.local" });
 dotenv.config({ path: ".env" });
 
-const databaseUrl = process.env["DATABASE_URL"];
+// Use DATABASE_PUBLIC_URL for build time (Railway), fallback to DATABASE_URL
+const databaseUrl = process.env["DATABASE_PUBLIC_URL"] || process.env["DATABASE_URL"];
 
 if (!databaseUrl) {
   throw new Error("DATABASE_URL environment variable is required. Get a free PostgreSQL database from https://neon.tech or https://supabase.com");
