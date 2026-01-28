@@ -3,6 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 import { Button } from "@/components/ui/button";
 import { MedicalRecordShare } from "@/components/records/MedicalRecordShare";
 import { getSpeciesInfo } from "@/types";
